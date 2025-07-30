@@ -1,0 +1,3 @@
+"""
+News agent module.
+""" 
