@@ -11,3 +11,6 @@ pydantic
 newsapi-python
 python-jose[cryptography]
 passlib[bcrypt]
+langchain[google-genai]
+langgraph-checkpoint-sqlite
+langchain-core
