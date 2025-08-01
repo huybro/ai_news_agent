@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversational News Agent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        #chat-container::-webkit-scrollbar { width: 4px; }
+        #chat-container::-webkit-scrollbar-thumb { background-color: #4a5568; border-radius: 20px; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center h-screen p-4">
+
+    <div class="w-full max-w-2xl h-full flex flex-col bg-gray-800 rounded-xl shadow-2xl border border-gray-700">
+        <header class="p-4 border-b border-gray-700">
+            <h1 class="text-xl font-bold text-center">News Agent</h1>
+        </header>
+
+        <main id="chat-container" class="flex-1 p-6 overflow-y-auto space-y-4">
+            <!-- Chat messages will be appended here -->
+            <div class="p-4 rounded-lg bg-gray-700 self-start max-w-lg">
+                <p>Hello! Ask me to find news on any topic. For example: "What's the latest on AI regulations?"</p>
+            </div>
+        </main>
+
+        <footer class="p-4 border-t border-gray-700">
+            <form id="chat-form" class="flex items-center space-x-4">
+                <input type="text" id="message-input" placeholder="Type your message..."
+                       class="flex-1 p-3 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                <button type="submit" id="send-button"
+                        class="px-6 py-3 bg-blue-600 rounded-lg font-semibold hover:bg-blue-700 transition disabled:bg-gray-500 disabled:cursor-not-allowed">
+                    Send
+                </button>
+            </form>
+        </footer>
+    </div>
+
+    <script>
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const chatContainer = document.getElementById('chat-container');
+
+        // Generate a unique thread ID for the session
+        const threadId = 'session-' + Date.now() + '-' + Math.random().toString(36).substring(2);
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Display user message
+            appendMessage(message, 'user');
+            messageInput.value = '';
+            sendButton.disabled = true;
+
+            // Create a container for the agent's response
+            const agentMessageContainer = createMessageContainer('agent');
+            chatContainer.appendChild(agentMessageContainer);
+            scrollToBottom();
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message, thread_id: threadId }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let agentText = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    agentText += decoder.decode(value, { stream: true });
+                    agentMessageContainer.innerHTML = `<p>${agentText.replace(/\n/g, '<br>')}</p>`;
+                    scrollToBottom();
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                agentMessageContainer.innerHTML = `<p class="text-red-400">Sorry, an error occurred. Please try again.</p>`;
+            } finally {
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+        });
+
+        function createMessageContainer(sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `p-4 rounded-lg max-w-lg ${
+                sender === 'user' ? 'bg-blue-600 self-end' : 'bg-gray-700 self-start'
+            }`;
+            return messageDiv;
+        }
+
+        function appendMessage(text, sender) {
+            const messageContainer = createMessageContainer(sender);
+            messageContainer.innerHTML = `<p>${text}</p>`;
+            chatContainer.appendChild(messageContainer);
+            scrollToBottom();
+        }
+        
+        function scrollToBottom() {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>

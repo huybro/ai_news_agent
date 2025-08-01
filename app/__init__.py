@@ -1,3 +1,0 @@
-"""
-AI News Agent package.
-""" 

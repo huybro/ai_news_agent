@@ -7,13 +7,13 @@ import requests
 # It's better to handle potential import errors, especially for relative imports.
 try:
     # Assuming your script is run from the root of the 'ai_news_agent' directory
-    from app.agents.news_agent import NewsAgent
+    from app.news_agent import NewsAgent
 except ImportError:
     print("Error: Could not import NewsAgent. Make sure you are running this script from the project's root directory.")
     # Add the project root to the path if necessary
     import sys
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-    from app.agents.news_agent import NewsAgent
+    from app.news_agent import NewsAgent
 
 
 def test_eventregistry_api():

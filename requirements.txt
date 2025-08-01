@@ -1,16 +1,22 @@
+# --- Core Web App ---
+fastapi
+uvicorn[standard]
+python-dotenv
+
+# --- LangChain & LangGraph ---
+# Installing the main packages will pull in the correct core libraries (e.g., langchain-core)
 langchain
 langgraph
 langsmith
-google-generativeai
-psycopg2-binary
-python-dotenv
-fastapi
-uvicorn
-sqlalchemy
-pydantic
+
+# --- LLM Provider ---
+langchain-google-genai
+
+# --- Checkpointers ---
+# For PostgreSQL. This will install the correct 'psycopg' driver.
+langgraph-checkpoint-postgres
+# --- Tools ---
+# You listed this, but your tool code uses the 'requests' library instead.
+# Include if you are using it elsewhere.
 newsapi-python
-python-jose[cryptography]
-passlib[bcrypt]
-langchain[google-genai]
-langgraph-checkpoint-sqlite
-langchain-core
+requests
